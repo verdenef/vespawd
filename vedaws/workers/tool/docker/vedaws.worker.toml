@@ -1,0 +1,17 @@
+[worker]
+id = "tool.docker"
+name = "Docker"
+description = "Tool worker placeholder for Docker container operations"
+version = "0.1.0"
+type = "tool"
+provider = "docker"
+
+[[capabilities]]
+work_type = "container-build"
+scope = "infrastructure"
+risk = "medium"
+
+[[capabilities]]
+work_type = "container-run"
+scope = "infrastructure"
+risk = "medium"

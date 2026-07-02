@@ -1,0 +1,17 @@
+[plugin]
+id = "mock-ai"
+name = "Mock AI Provider"
+version = "0.1.0"
+author = "Vedaws"
+description = "Reference AI provider validating the Vedaws AI Provider SDK."
+manifest_version = "1"
+entry_point = "mock_ai_plugin:MockAIPlugin"
+
+[plugin.compatibility]
+vedaws = ">=0.1.0"
+python = ">=3.11"
+
+[capabilities]
+ai_providers = true
+workers = true
+health_checks = true

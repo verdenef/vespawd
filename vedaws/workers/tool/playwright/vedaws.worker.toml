@@ -1,0 +1,17 @@
+[worker]
+id = "tool.playwright"
+name = "Playwright"
+description = "Tool worker placeholder for Playwright browser automation"
+version = "0.1.0"
+type = "tool"
+provider = "playwright"
+
+[[capabilities]]
+work_type = "browser-test"
+scope = "web"
+risk = "low"
+
+[[capabilities]]
+work_type = "ui-verification"
+scope = "web"
+risk = "low"

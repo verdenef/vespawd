@@ -1,0 +1,17 @@
+[worker]
+id = "tool.unity"
+name = "Unity"
+description = "Tool worker placeholder for Unity editor and build operations"
+version = "0.1.0"
+type = "tool"
+provider = "unity"
+
+[[capabilities]]
+work_type = "engine-build"
+scope = "game"
+risk = "medium"
+
+[[capabilities]]
+work_type = "asset-inspection"
+scope = "game"
+risk = "low"

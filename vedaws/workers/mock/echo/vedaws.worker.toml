@@ -1,0 +1,11 @@
+[worker]
+id = "mock.echo"
+name = "Echo Worker"
+description = "Returns the task name as the outcome message"
+version = "0.1.0"
+type = "tool"
+provider = "vedaws-mock"
+
+[[capabilities]]
+work_type = "echo"
+scope = "general"

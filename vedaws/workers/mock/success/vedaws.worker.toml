@@ -1,0 +1,23 @@
+[worker]
+id = "mock.success"
+name = "Success Worker"
+description = "Always completes tasks successfully"
+version = "0.1.0"
+type = "tool"
+provider = "vedaws-mock"
+
+[[capabilities]]
+work_type = "planning"
+scope = "general"
+
+[[capabilities]]
+work_type = "validation"
+scope = "general"
+
+[[capabilities]]
+work_type = "review"
+scope = "general"
+
+[[capabilities]]
+work_type = "success"
+scope = "general"

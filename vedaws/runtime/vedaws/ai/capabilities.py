@@ -1,0 +1,23 @@
+"""Generic AI capability identifiers — provider-neutral."""
+
+from __future__ import annotations
+
+AI_CAPABILITY_CHAT = "chat"
+AI_CAPABILITY_PLAN = "plan"
+AI_CAPABILITY_IMPLEMENT = "implement"
+AI_CAPABILITY_REVIEW = "review"
+AI_CAPABILITY_SUMMARIZE = "summarize"
+AI_CAPABILITY_DOCUMENT = "document"
+AI_CAPABILITY_REFACTOR = "refactor"
+AI_CAPABILITY_EXPLAIN = "explain"
+
+STANDARD_AI_CAPABILITIES: tuple[str, ...] = (
+    AI_CAPABILITY_CHAT,
+    AI_CAPABILITY_PLAN,
+    AI_CAPABILITY_IMPLEMENT,
+    AI_CAPABILITY_REVIEW,
+    AI_CAPABILITY_SUMMARIZE,
+    AI_CAPABILITY_DOCUMENT,
+    AI_CAPABILITY_REFACTOR,
+    AI_CAPABILITY_EXPLAIN,
+)

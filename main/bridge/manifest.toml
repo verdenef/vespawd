@@ -1,0 +1,60 @@
+[vespawd]
+version = "0.1.0"
+layout = "sidecar"
+
+[pos]
+root = "../paws022"
+current_task = "tasks/current_task.md"
+handoff = "docs/HANDOFF_FOR_DOCUMENTER.md"
+design_gate = "design/DESIGN.md"
+status = "tasks/status.md"
+
+[vedaws]
+project_root = "."
+workflow_id = "software"
+cli = "../../vedaws"
+
+[compat]
+vedaws = "0.5.0"
+
+[run]
+max_iterations = 3
+strict_mode = false
+
+[validation]
+ui_keywords = [
+  "ui",
+  "screen",
+  "button",
+  "form",
+  "layout",
+  "dashboard",
+  "modal",
+  "frontend",
+  "interface",
+]
+
+[phase_map.scope]
+keywords = ["scope", "requirements", "mvp"]
+
+[phase_map.architecture]
+keywords = ["architecture", "components", "adr"]
+
+[phase_map.api-design]
+keywords = ["api", "schema", "contracts"]
+
+[phase_map.implement]
+keywords = ["implement", "feature", "build"]
+
+[phase_map.test]
+keywords = ["test", "verify", "demo"]
+
+[phase_map.review]
+keywords = ["review", "lint", "fix pass"]
+
+[phase_map.handoff]
+keywords = ["handoff", "submission package"]
+
+[projection]
+handoff_mirror = "docs/handoff/HANDOFF.md"
+doctor_summary_max_chars = 2000

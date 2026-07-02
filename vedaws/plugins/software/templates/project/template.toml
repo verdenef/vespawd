@@ -1,0 +1,11 @@
+[template]
+id = "software"
+name = "Software Development"
+description = "Full software lifecycle workflow with architecture, API, decisions, and handoff artifacts."
+version = "1.0.0"
+default_workflow = "software"
+skip_default_workflow = true
+scaffold_dir = "scaffold"
+
+[plugins]
+enabled = ["hello", "git", "software"]

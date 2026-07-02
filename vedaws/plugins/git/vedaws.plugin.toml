@@ -1,0 +1,23 @@
+[plugin]
+id = "git"
+name = "Git Plugin"
+version = "0.1.0"
+author = "Vedaws"
+description = "First-party Git integration plugin — reference implementation for production plugins."
+manifest_version = "1"
+entry_point = "git_plugin:GitPlugin"
+
+[plugin.compatibility]
+vedaws = ">=0.1.0"
+python = ">=3.11"
+
+[capabilities]
+workers = true
+commands = true
+health_checks = true
+configuration = true
+
+[security]
+permissions = ["filesystem.read", "filesystem.write", "subprocess.exec"]
+subprocess_allow = ["git"]
+network = "none"

@@ -1,0 +1,47 @@
+#!/usr/bin/env python3
+"""Public CLI entry: bridge invoke <operation> (§1.3, Appendix C)."""
+
+from __future__ import annotations
+
+import argparse
+import json
+import sys
+from pathlib import Path
+
+BRIDGE_ROOT = Path(__file__).resolve().parents[1]
+LIB_ROOT = BRIDGE_ROOT / "lib"
+sys.path.insert(0, str(LIB_ROOT))
+
+from vespawd_bridge.api.invoke import invoke_from_dict  # noqa: E402
+
+
+def main(argv: list[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(prog="bridge", description="Vespawd Bridge CLI")
+    subparsers = parser.add_subparsers(dest="command", required=True)
+
+    invoke_parser = subparsers.add_parser("invoke", help="Invoke a Bridge operation")
+    invoke_parser.add_argument("operation", help="Operation name")
+    invoke_parser.add_argument("--context", required=True, help="Path to BridgeContext JSON")
+    invoke_parser.add_argument("--input", default=None, help="Path to operation input JSON")
+    invoke_parser.add_argument("--output", default=None, help="Write BridgeResult JSON to path")
+
+    args = parser.parse_args(argv)
+    if args.command != "invoke":
+        parser.error("Only invoke is supported")
+
+    context_data = json.loads(Path(args.context).read_text(encoding="utf-8"))
+    payload = {}
+    if args.input:
+        payload = json.loads(Path(args.input).read_text(encoding="utf-8"))
+
+    result = invoke_from_dict(args.operation, context_data, payload)
+    output = json.dumps(result.to_dict(), indent=2)
+    if args.output:
+        Path(args.output).write_text(output, encoding="utf-8")
+    else:
+        print(output)
+    return 0 if result.ok else 1
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

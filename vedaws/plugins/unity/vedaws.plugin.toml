@@ -1,0 +1,21 @@
+[plugin]
+id = "unity"
+name = "Unity Game Development Plugin"
+version = "0.1.0"
+author = "Vedaws"
+description = "Game development domain plugin — validates Vedaws as a multi-domain Development OS."
+manifest_version = "1"
+entry_point = "unity_plugin:UnityPlugin"
+
+[plugin.compatibility]
+vedaws = ">=0.1.0"
+python = ">=3.11"
+
+[capabilities]
+workers = true
+commands = true
+workflows = true
+projects = true
+skills = true
+health_checks = true
+configuration = true

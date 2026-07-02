@@ -1,0 +1,55 @@
+# Software development workflow — Vedaws Software Workflow Plugin
+
+[workflow]
+id = "software"
+name = "Software Development"
+version = "1.0.0"
+description = "Discover, architect, design, implement, test, review, and hand off software."
+
+[[tasks]]
+id = "scope"
+name = "Scope & discover"
+description = "Clarify goals, constraints, and success criteria for the software effort."
+capability = "software-scoping"
+
+[[tasks]]
+id = "architecture"
+name = "Architecture"
+description = "Produce system architecture and document key structural decisions."
+depends_on = ["scope"]
+capability = "software-architecture"
+
+[[tasks]]
+id = "api-design"
+name = "API design"
+description = "Define public interfaces, contracts, and integration boundaries."
+depends_on = ["architecture"]
+capability = "software-api"
+
+[[tasks]]
+id = "implement"
+name = "Implementation"
+description = "Build the software according to architecture and API specifications."
+depends_on = ["api-design"]
+capability = "software-implementation"
+
+[[tasks]]
+id = "test"
+name = "Testing"
+description = "Verify behavior, document test results, and confirm readiness."
+depends_on = ["implement"]
+capability = "software-testing"
+
+[[tasks]]
+id = "review"
+name = "Review"
+description = "Conduct structured review before release or handoff."
+depends_on = ["test"]
+capability = "software-review"
+
+[[tasks]]
+id = "handoff"
+name = "Handoff"
+description = "Package deliverables, documentation, and operational guidance."
+depends_on = ["review"]
+capability = "software-handoff"

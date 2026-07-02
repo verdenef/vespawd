@@ -1,0 +1,11 @@
+[worker]
+id = "mock.failure"
+name = "Failure Worker"
+description = "Always fails tasks (for testing failure paths)"
+version = "0.1.0"
+type = "tool"
+provider = "vedaws-mock"
+
+[[capabilities]]
+work_type = "failure"
+scope = "general"

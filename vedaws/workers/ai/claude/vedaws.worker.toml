@@ -1,0 +1,22 @@
+[worker]
+id = "ai.claude"
+name = "Claude"
+description = "AI worker placeholder for Anthropic Claude"
+version = "0.1.0"
+type = "ai"
+provider = "anthropic"
+
+[[capabilities]]
+work_type = "code-generation"
+scope = "general"
+risk = "medium"
+
+[[capabilities]]
+work_type = "analysis"
+scope = "general"
+risk = "medium"
+
+[[capabilities]]
+work_type = "document-authoring"
+scope = "general"
+risk = "low"

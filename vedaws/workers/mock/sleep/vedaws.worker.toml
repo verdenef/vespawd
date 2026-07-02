@@ -1,0 +1,11 @@
+[worker]
+id = "mock.sleep"
+name = "Sleep Worker"
+description = "Simulates work by sleeping briefly"
+version = "0.1.0"
+type = "tool"
+provider = "vedaws-mock"
+
+[[capabilities]]
+work_type = "sleep"
+scope = "general"

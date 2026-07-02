@@ -1,0 +1,14 @@
+﻿---
+description: Project Operating System — follow .ai/executor_rules.md
+alwaysApply: true
+---
+
+# POS (Cursor)
+
+Apply **[.ai/executor_rules.md](../../.ai/executor_rules.md)** in full.
+
+## Cursor-specific
+
+- `alwaysApply: true` via this file.
+- Accept **POS MASTER PROMPT** or legacy **CURSOR MASTER PROMPT**; map CURSOR INSTRUCTIONS to executor behavior.
+- Setup: `setup/wizard.html` or `scripts/pos-setup.ps1`.

@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "stitch": {
+      "command": "npx",
+      "args": ["-y", "REPLACE_WITH_PACKAGE_FROM_STITCH_DOCS"],
+      "env": {
+        "STITCH_API_KEY": "your-key-from-stitch-settings"
+      }
+    }
+  }
+}

@@ -1,0 +1,13 @@
+# Example workflow template contributed by the Hello plugin
+
+[workflow]
+id = "hello"
+name = "Hello workflow"
+version = "0.1.0"
+description = "A minimal workflow that exercises the hello.worker capability."
+
+[[tasks]]
+id = "greet"
+name = "Say hello"
+description = "Run the hello worker greeting task."
+capability = "hello"

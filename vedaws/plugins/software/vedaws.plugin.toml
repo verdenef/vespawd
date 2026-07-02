@@ -1,0 +1,21 @@
+[plugin]
+id = "software"
+name = "Software Workflow Plugin"
+version = "0.1.0"
+author = "Vedaws"
+description = "Domain plugin for software development workflows — PAWS successor on the Vedaws platform."
+manifest_version = "1"
+entry_point = "software_plugin:SoftwarePlugin"
+
+[plugin.compatibility]
+vedaws = ">=0.1.0"
+python = ">=3.11"
+
+[capabilities]
+workers = true
+commands = true
+workflows = true
+projects = true
+skills = true
+health_checks = true
+configuration = true

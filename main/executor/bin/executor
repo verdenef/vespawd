@@ -1,0 +1,48 @@
+#!/usr/bin/env python3
+"""Public CLI: exposes only the `startup` command; orchestration is provided
+through the library API (vespawd_executor.api)."""
+
+from __future__ import annotations
+
+import argparse
+import json
+import sys
+from pathlib import Path
+
+EXECUTOR_ROOT = Path(__file__).resolve().parents[1]
+LIB_ROOT = EXECUTOR_ROOT / "lib"
+sys.path.insert(0, str(LIB_ROOT))
+
+from vespawd_executor.startup.sequence import run_startup  # noqa: E402
+
+
+def main(argv: list[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(prog="executor", description="Vespawd Executor CLI")
+    subparsers = parser.add_subparsers(dest="command", required=True)
+
+    startup_parser = subparsers.add_parser("startup", help="Run Executor startup sequence (§3)")
+    startup_parser.add_argument(
+        "--workspace",
+        default=None,
+        help="Workspace root (parent of main/ and paws022/)",
+    )
+    startup_parser.add_argument("--output", default=None, help="Write StartupResult JSON to path")
+
+    args = parser.parse_args(argv)
+    if args.command != "startup":
+        parser.error(
+            "The CLI exposes only the startup command; "
+            "orchestration is available through the library API (vespawd_executor.api)"
+        )
+
+    result = run_startup(args.workspace)
+    payload = json.dumps(result.to_dict(), indent=2)
+    if args.output:
+        Path(args.output).write_text(payload, encoding="utf-8")
+    else:
+        print(payload)
+    return 0 if result.ok else 1
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

@@ -1,0 +1,17 @@
+[worker]
+id = "tool.git"
+name = "Git"
+description = "Tool worker placeholder for Git version control operations"
+version = "0.1.0"
+type = "tool"
+provider = "git"
+
+[[capabilities]]
+work_type = "version-control"
+scope = "repository"
+risk = "medium"
+
+[[capabilities]]
+work_type = "diff-inspection"
+scope = "repository"
+risk = "low"

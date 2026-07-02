@@ -1,0 +1,36 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "vedaws"
+version = "0.5.0"
+description = "A domain-neutral Development Operating System"
+readme = "VEDAWS_BOOTSTRAP.md"
+requires-python = ">=3.11"
+license = { text = "Proprietary" }
+authors = [{ name = "Vedaws" }]
+keywords = ["devops", "orchestration", "development"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Environment :: Console",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+]
+dependencies = []
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0"]
+
+[project.scripts]
+vedaws = "vedaws.cli.app:main"
+
+[tool.setuptools.packages.find]
+where = ["runtime"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["runtime"]

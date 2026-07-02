@@ -1,0 +1,62 @@
+# Unity game development workflow — Vedaws Unity Plugin
+
+[workflow]
+id = "unity"
+name = "Unity Game Development"
+version = "1.0.0"
+description = "Concept through release for Unity game projects."
+
+[[tasks]]
+id = "concept"
+name = "Concept"
+description = "Define the game vision, audience, and core pillars."
+capability = "unity-concept"
+
+[[tasks]]
+id = "game-design"
+name = "Game design"
+description = "Document mechanics, progression, and content scope."
+depends_on = ["concept"]
+capability = "unity-game-design"
+
+[[tasks]]
+id = "prototype"
+name = "Prototype"
+description = "Build a playable prototype validating core loops."
+depends_on = ["game-design"]
+capability = "unity-prototype"
+
+[[tasks]]
+id = "gameplay"
+name = "Gameplay"
+description = "Implement core gameplay systems, scenes, and prefabs."
+depends_on = ["prototype"]
+capability = "unity-gameplay"
+
+[[tasks]]
+id = "ui"
+name = "UI"
+description = "Design and implement player-facing interfaces."
+depends_on = ["gameplay"]
+capability = "unity-ui"
+
+[[tasks]]
+id = "testing"
+name = "Testing"
+description = "Run playtests and document findings."
+depends_on = ["ui"]
+capability = "unity-testing"
+
+[[tasks]]
+id = "build"
+name = "Build"
+description = "Prepare a distributable build configuration."
+depends_on = ["testing"]
+capability = "unity-build"
+
+[[tasks]]
+id = "release"
+name = "Release"
+description = "Package and document the release."
+depends_on = ["build"]
+capability = "unity-release"

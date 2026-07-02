@@ -1,0 +1,20 @@
+[plugin]
+id = "hello"
+name = "Hello Plugin"
+version = "0.1.0"
+author = "Vedaws"
+description = "Reference plugin demonstrating the Vedaws plugin platform."
+manifest_version = "1"
+entry_point = "hello_plugin:HelloPlugin"
+
+[plugin.compatibility]
+vedaws = ">=0.1.0"
+python = ">=3.11"
+
+[capabilities]
+workers = true
+commands = true
+workflows = true
+skills = true
+health_checks = true
+configuration = true

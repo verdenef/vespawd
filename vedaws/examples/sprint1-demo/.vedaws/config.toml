@@ -1,0 +1,7 @@
+# Vedaws project configuration
+
+[logging]
+level = "INFO"
+
+[plugins]
+enabled = true

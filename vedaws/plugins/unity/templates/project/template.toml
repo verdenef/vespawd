@@ -1,0 +1,11 @@
+[template]
+id = "unity"
+name = "Unity Game Development"
+description = "Unity game lifecycle workflow with standard project layout and documentation artifacts."
+version = "1.0.0"
+default_workflow = "unity"
+skip_default_workflow = true
+scaffold_dir = "scaffold"
+
+[plugins]
+enabled = ["hello", "git", "unity"]

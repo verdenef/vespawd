@@ -1,0 +1,2 @@
+m_EditorVersion: 0.0.0-vedaws-placeholder
+m_EditorVersionWithRevision: 0.0.0-vedaws-placeholder (placeholder)

@@ -1,0 +1,21 @@
+[worker]
+id = "human.default"
+name = "Human Worker"
+description = "Default human worker for judgment, review, and manual tasks"
+version = "0.1.0"
+type = "human"
+
+[[capabilities]]
+work_type = "review"
+scope = "general"
+risk = "low"
+
+[[capabilities]]
+work_type = "acceptance"
+scope = "general"
+risk = "low"
+
+[[capabilities]]
+work_type = "manual-action"
+scope = "general"
+risk = "medium"

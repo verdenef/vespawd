@@ -1,0 +1,17 @@
+[worker]
+id = "ai.gemini"
+name = "Gemini"
+description = "AI worker placeholder for Google Gemini"
+version = "0.1.0"
+type = "ai"
+provider = "google"
+
+[[capabilities]]
+work_type = "code-generation"
+scope = "general"
+risk = "medium"
+
+[[capabilities]]
+work_type = "analysis"
+scope = "general"
+risk = "medium"
