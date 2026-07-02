@@ -44,6 +44,7 @@ def fixture_workspace(tmp_path: Path) -> Path:
 
     manifest = bridge / "manifest.toml"
     text = manifest.read_text(encoding="utf-8")
+    text = text.replace('cli = "../vedaws"', f'cli = "{VEDAWS_ROOT.as_posix()}"')
     text = text.replace('cli = "../../vedaws"', f'cli = "{VEDAWS_ROOT.as_posix()}"')
     manifest.write_text(text, encoding="utf-8")
 

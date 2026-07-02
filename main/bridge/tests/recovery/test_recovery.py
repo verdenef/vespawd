@@ -45,6 +45,8 @@ def _minimal_workspace(tmp_path: Path) -> Path:
     shutil.copytree(BRIDGE_ROOT / "spec", bridge / "spec")
     shutil.copytree(BRIDGE_ROOT / "sync", bridge / "sync")
     text = (bridge / "manifest.toml").read_text(encoding="utf-8").replace(
+        'cli = "../vedaws"', f'cli = "{VEDAWS_ROOT.as_posix()}"'
+    ).replace(
         'cli = "../../vedaws"', f'cli = "{VEDAWS_ROOT.as_posix()}"'
     )
     (bridge / "manifest.toml").write_text(text, encoding="utf-8")

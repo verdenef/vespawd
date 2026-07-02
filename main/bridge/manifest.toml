@@ -12,7 +12,7 @@ status = "tasks/status.md"
 [vedaws]
 project_root = "."
 workflow_id = "software"
-cli = "../../vedaws"
+cli = "../vedaws"
 
 [compat]
 vedaws = "0.5.0"

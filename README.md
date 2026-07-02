@@ -90,6 +90,53 @@ vespawd/                          ← workspace root (open in your IDE)
 
 ---
 
+## Create a new project
+
+Keep one copy of the Vespawd framework on your machine (this repo, cloned from git). For each new application, run the setup script — it copies the framework into your project and wires the sidecar layout automatically.
+
+**Interactive (recommended):**
+
+```powershell
+# Windows
+.\scripts\new-vespawd-project.ps1
+```
+
+```bash
+# macOS / Linux
+./scripts/new-vespawd-project.sh
+```
+
+The script prompts for:
+- **Parent directory** — where to create the project (e.g. `C:\dev`)
+- **Project name** — folder name, product name, and Vedaws project name
+- **Confirmation** — shows the layout before copying
+
+**Non-interactive:**
+
+```bash
+python scripts/new_project.py C:\dev\my-todo-app --name my-todo-app --yes
+```
+
+**What you get:**
+
+```
+my-todo-app/                 ← open THIS in your IDE
+├── vespawd/                 ← framework copy (paws022, vedaws, bridge, executor)
+│   ├── paws022/             ← project memory (tasks, docs, agent rules)
+│   └── main/
+│       ├── bridge/
+│       ├── executor/
+│       └── .vedaws/         ← orchestration state (auto-managed)
+└── main/
+    └── src/                 ← your application code
+```
+
+The script also: resets PAWS memory to a clean slate, runs `vedaws init`, optionally `git init` + `.gitignore`, and verifies executor startup.
+
+Flags: `--force` (replace existing `vespawd/`), `--no-init`, `--no-git`, `--no-verify`.
+
+---
+
 ## Installation
 
 Vespawd requires **Python 3.11+**.
