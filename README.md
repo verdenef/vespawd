@@ -166,8 +166,11 @@ After creating a project with `new-project.bat`, open the **project root** (the 
    The executor updates PAWS files, writes code in main/src/, and (via .cursor/rules/vespawd.mdc)
    runs sync_orchestration.py so Vedaws stays in sync.
 
-4. Test the app. Once you have tested and ACCEPTED the phase, double-click
-   accept-phase.bat (it asks you to confirm, then advances the Vedaws ledger one stage).
+4. Test the app. When work moves to a new kind of activity (e.g. architecture -> implementation),
+   the IDE agent will PROPOSE aligning the lifecycle checklist and wait for your yes/no. It never
+   advances on its own, and never marks your current work done. You can also do this yourself
+   from vespawd.bat -> "Align lifecycle to current work", or tick a single stage after acceptance
+   with accept-phase.bat.
 
 5. Loop back to the Planner for the next phase.
 
@@ -175,9 +178,11 @@ Double-click helpers at the project root:
 
 | Button | When to click | What it does |
 |--------|---------------|--------------|
-| `vespawd.bat` | Anytime you want to check or control the project | Opens a simple menu: Status, Health check, Sync, Accept phase, Progress, and advanced tools. **Start here.** |
+| `vespawd.bat` | Anytime you want to check or control the project | Opens a simple menu: Status, Health check, Sync, Align lifecycle, Accept phase, Progress, and advanced tools. **Start here.** |
 | `sync-orchestration.bat` | If `status.md` looks stale | Refreshes orchestration status. Never advances the ledger. Safe anytime. |
 | `accept-phase.bat` | After you tested and accepted a phase | Confirms, then ticks the next lifecycle stage. Optional — affects only the progress ledger, not your code. |
+
+Lifecycle vs. phases: the checklist has 7 fixed stages (scope → architecture → api-design → implement → test → review → handoff) and tracks the *kind* of work — many of your phases can live inside one stage. "Align lifecycle" catches up the earlier stages to match where your current task actually is, without ever closing your work-in-progress.
 
 (`vespawd.bat` wraps everything below, so you rarely need the raw commands.)
 ```
@@ -186,7 +191,7 @@ Orchestration was already initialized by the setup script; you do not need to ru
 
 ### The Vespawd Console (`vespawd.bat`)
 
-For a friendly, menu-driven way to inspect and control orchestration without memorizing commands, double-click **`vespawd.bat`** (or run `py -3 vespawd/scripts/vespawd_console.py`). It groups actions into **Basic** (Status, Health, Sync, Accept phase, Progress) and **Advanced** (state history, docs checklist, automation, AI providers, events, full status, raw command), and auto-detects paths so you never type `--path`.
+For a friendly, menu-driven way to inspect and control orchestration without memorizing commands, double-click **`vespawd.bat`** (or run `py -3 vespawd/scripts/vespawd_console.py`). It groups actions into **Basic** (Status, Health, Sync, Align lifecycle, Accept phase, Progress) and **Advanced** (state history, docs checklist, automation, AI providers, events, full status, raw command), and auto-detects paths so you never type `--path`.
 
 The executor CLI exposes the startup command directly; orchestration is available through the library API (`vespawd_executor.api`):
 

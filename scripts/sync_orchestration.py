@@ -145,6 +145,24 @@ def _workflow_progress(vedaws_main: Path, vespawd: Path, workflow_id: str) -> tu
     return progress or "unknown", ready
 
 
+def _workflow_tasks(vedaws_main: Path, vespawd: Path, workflow_id: str) -> list[tuple[str, str]]:
+    """Return ordered [(task_id, status)] from `vedaws workflow show`."""
+    proc = subprocess.run(
+        [sys.executable, "-m", "vedaws", "workflow", "show", workflow_id, "--path", str(vedaws_main)],
+        capture_output=True,
+        text=True,
+        env=_vedaws_env(vespawd),
+    )
+    tasks: list[tuple[str, str]] = []
+    if proc.returncode != 0:
+        return tasks
+    for line in proc.stdout.splitlines():
+        match = re.match(r"\s*(\S+)\s+\[(\w+)\]", line)
+        if match:
+            tasks.append((match.group(1), match.group(2)))
+    return tasks
+
+
 def _complete_ready_task(vedaws_main: Path, vespawd: Path, task_id: str) -> tuple[bool, str]:
     """Complete a single ready workflow stage without triggering the automation cascade.
 
@@ -161,6 +179,37 @@ def _complete_ready_task(vedaws_main: Path, vespawd: Path, task_id: str) -> tupl
     if proc.returncode != 0:
         return False, (proc.stderr or proc.stdout or "tasks complete rejected").strip()
     return True, task_id
+
+
+def _advance_to_mapped(
+    vedaws_main: Path, vespawd: Path, workflow_id: str, mapped_task: str
+) -> tuple[list[str], str | None]:
+    """Complete ready stages strictly BEFORE the mapped stage; never the mapped stage itself.
+
+    This aligns the ledger so the current task's stage becomes the active/ready one,
+    marking earlier lifecycle stages done without ever closing the work in progress.
+    Returns (completed_ids, error).
+    """
+    tasks = _workflow_tasks(vedaws_main, vespawd, workflow_id)
+    order = [tid for tid, _ in tasks]
+    if mapped_task not in order:
+        return [], f"mapped stage {mapped_task} not found in workflow"
+    mapped_index = order.index(mapped_task)
+    completed: list[str] = []
+    # Re-query each pass since completing one stage promotes the next to ready.
+    for _ in range(len(order)):
+        current = _workflow_tasks(vedaws_main, vespawd, workflow_id)
+        ready = next(((tid, idx) for idx, (tid, st) in enumerate(current) if st == "ready"), None)
+        if ready is None:
+            break
+        ready_id, ready_index = ready
+        if ready_index >= mapped_index:
+            break  # reached the current work stage; stop
+        done, detail = _complete_ready_task(vedaws_main, vespawd, ready_id)
+        if not done:
+            return completed, detail
+        completed.append(ready_id)
+    return completed, None
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -181,6 +230,13 @@ def main(argv: list[str] | None = None) -> int:
         action="store_true",
         help="After you have tested and accepted this phase, mark the current ready "
         "workflow stage complete so the Vedaws ledger advances (one stage per run).",
+    )
+    parser.add_argument(
+        "--advance",
+        action="store_true",
+        help="Align the ledger to the current task's mapped lifecycle stage: complete "
+        "earlier stages but NEVER the stage you are currently working on. Use when work "
+        "has moved to a new kind of activity (agent smart-propose flow).",
     )
     args = parser.parse_args(argv)
 
@@ -242,13 +298,25 @@ def main(argv: list[str] | None = None) -> int:
     sync = _invoke_bridge(bridge, "sync_status", context, {})
 
     ok = bool(ingest.get("ok")) and bool(sync.get("ok"))
+    mapped_task = ingest.get("vedaws_task_id") or sync.get("vedaws_task_id")
     completed_task: str | None = None
-    complete_error: str | None = None
+    advanced: list[str] = []
+    action_error: str | None = None
 
-    if args.complete:
+    if args.advance:
+        if not mapped_task:
+            action_error = "could not determine the mapped lifecycle stage"
+            ok = False
+        else:
+            advanced, action_error = _advance_to_mapped(vedaws_main, vespawd, "software", mapped_task)
+            if action_error:
+                ok = False
+            if advanced:
+                sync = _invoke_bridge(bridge, "sync_status", context, {})
+    elif args.complete:
         _, ready_task = _workflow_progress(vedaws_main, vespawd, "software")
         if ready_task is None:
-            complete_error = "no ready workflow stage to close (already caught up or blocked)"
+            action_error = "no ready workflow stage to close (already caught up or blocked)"
         else:
             done, detail = _complete_ready_task(vedaws_main, vespawd, ready_task)
             if done:
@@ -256,7 +324,7 @@ def main(argv: list[str] | None = None) -> int:
                 # Reproject status.md through the Bridge after the ledger moved.
                 sync = _invoke_bridge(bridge, "sync_status", context, {})
             else:
-                complete_error = detail
+                action_error = detail
                 ok = False
 
     state_after = _vedaws_state(vedaws_main, vespawd)
@@ -264,20 +332,27 @@ def main(argv: list[str] | None = None) -> int:
 
     print("ingest:   ", "ok" if ingest.get("ok") else "FAILED")
     print("sync:     ", "ok" if sync.get("ok") else "FAILED")
-    if args.complete:
+    if args.advance:
+        if advanced:
+            print(f"advance:   completed {', '.join(advanced)} (stopped before current stage)")
+        elif action_error:
+            print(f"advance:   {action_error}")
+        else:
+            print("advance:   already aligned — current stage is your active work")
+    elif args.complete:
         if completed_task:
             print(f"complete:  {completed_task} marked done")
         else:
-            print(f"complete:  {complete_error}")
-    print(f"task id:  {ingest.get('vedaws_task_id') or sync.get('vedaws_task_id') or '—'}")
+            print(f"complete:  {action_error}")
+    print(f"task id:  {mapped_task or '—'}  (this task's lifecycle stage)")
     print(f"state:    {state_before} -> {state_after}")
     print(f"workflow: {progress}" + (f"  (next ready: {next_ready})" if next_ready else ""))
     for warning in ingest.get("warnings") or []:
         print(f"warning:  {warning}")
     print()
     print(f"Updated:  {paws / 'tasks' / 'status.md'}")
-    if not args.complete and next_ready:
-        print("Tip: after you test and accept this phase, run with --complete to advance the workflow one stage.")
+    if not (args.complete or args.advance) and next_ready:
+        print("Tip: if work has moved to a new lifecycle stage, run with --advance to align the ledger.")
     print("Tip: use  py -3 -m vedaws status --path vespawd/main  (same as vedaws when not on PATH)")
     return 0 if ok else 1
 

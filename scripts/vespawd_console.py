@@ -66,6 +66,25 @@ def _format_sync_time(raw: str) -> str:
         return raw
 
 
+_ISO_RE = re.compile(r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})?")
+
+
+def _localize_timestamps(text: str) -> str:
+    """Rewrite ISO-8601 timestamps in CLI output to the user's local timezone."""
+    def repl(match: re.Match[str]) -> str:
+        raw = match.group(0)
+        try:
+            iso = raw[:-1] + "+00:00" if raw.endswith("Z") else raw
+            dt = datetime.fromisoformat(iso)
+            if dt.tzinfo is None:
+                dt = dt.replace(tzinfo=timezone.utc)
+            return f"{dt.astimezone().strftime('%Y-%m-%d %H:%M')} (your time)"
+        except ValueError:
+            return raw
+
+    return _ISO_RE.sub(repl, text)
+
+
 class Console:
     def __init__(self, root: Path) -> None:
         self.root = root
@@ -84,10 +103,12 @@ class Console:
         proc = subprocess.run(cmd, capture_output=True, text=True, env=self.env)
         return proc.returncode, proc.stdout, proc.stderr
 
-    def _sync(self, *, complete: bool) -> int:
+    def _sync(self, *, complete: bool = False, advance: bool = False) -> int:
         script = SCRIPT_DIR / "sync_orchestration.py"
         cmd = [sys.executable, str(script), str(self.root)]
-        if complete:
+        if advance:
+            cmd.append("--advance")
+        elif complete:
             cmd.append("--complete")
         return subprocess.run(cmd).returncode
 
@@ -172,11 +193,26 @@ class Console:
             return
         self._sync(complete=True)
 
+    def action_advance(self) -> None:
+        print("Align lifecycle to your current work")
+        print("-" * 40)
+        print("  This marks the EARLIER lifecycle stages done to match the stage")
+        print("  your current task belongs to. It never marks your current work")
+        print("  complete, and never advances past it.")
+        print("  Use this when work has clearly moved to a new kind of activity")
+        print("  (e.g. from architecture into implementation).")
+        print()
+        answer = input("  Type Y then Enter to confirm (anything else cancels): ").strip().lower()
+        if answer not in {"y", "yes"}:
+            print("  Cancelled - nothing changed.")
+            return
+        self._sync(advance=True)
+
     def action_progress(self) -> None:
         print("Lifecycle checklist")
         print("-" * 40)
         rc, out, err = self._vedaws(["workflow", "show", self.workflow_id])
-        print(out.strip() or err.strip())
+        print(_localize_timestamps(out.strip() or err.strip()))
 
     def action_state_history(self) -> None:
         print("Project state history")
@@ -234,16 +270,17 @@ MENU = [
     ("1", "Status - where does my project stand?", "action_status"),
     ("2", "Health check - is everything OK?", "action_health"),
     ("3", "Sync - refresh status after the executor worked", "action_sync"),
-    ("4", "Accept phase - advance one stage (after testing)", "action_accept"),
-    ("5", "Progress - show the lifecycle checklist", "action_progress"),
+    ("4", "Align lifecycle to current work (catch up earlier stages)", "action_advance"),
+    ("5", "Accept phase - advance one stage (after testing)", "action_accept"),
+    ("6", "Progress - show the lifecycle checklist", "action_progress"),
     ("ADVANCED", None),
-    ("6", "Project state history", "action_state_history"),
-    ("7", "Documentation checklist", "action_docs"),
-    ("8", "Automation rules", "action_automation"),
-    ("9", "AI providers", "action_ai"),
-    ("10", "Event bus statistics", "action_events"),
-    ("11", "Full runtime status (plugins + workers)", "action_full_status"),
-    ("12", "Run a raw Vedaws command", "action_raw"),
+    ("7", "Project state history", "action_state_history"),
+    ("8", "Documentation checklist", "action_docs"),
+    ("9", "Automation rules", "action_automation"),
+    ("10", "AI providers", "action_ai"),
+    ("11", "Event bus statistics", "action_events"),
+    ("12", "Full runtime status (plugins + workers)", "action_full_status"),
+    ("13", "Run a raw Vedaws command", "action_raw"),
 ]
 
 

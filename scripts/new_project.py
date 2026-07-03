@@ -152,7 +152,27 @@ When the user pastes a `# POS MASTER PROMPT` (or says "Execute this"):
 py -3 vespawd/scripts/sync_orchestration.py
 ```
 
-   (Use `python vespawd/scripts/sync_orchestration.py` if `py` is unavailable.) This calls the Bridge, advances the Vedaws workflow/state, and refreshes `vespawd/paws022/tasks/status.md`. Report the resulting state and any warnings. Do NOT pass `--complete` yourself — that is for the human to run after they have tested and accepted a phase.
+   (Use `python vespawd/scripts/sync_orchestration.py` if `py` is unavailable.) This refreshes `vespawd/paws022/tasks/status.md`. It never advances the lifecycle ledger. Report the resulting state and any warnings.
+
+5. **Smart-propose lifecycle advance (ask; never decide alone).** Read the sync output:
+   - `task id: software.<stage>` is the lifecycle stage THIS task maps to (deterministic keyword mapping).
+   - `next ready: software.<stage>` is where the ledger's checklist currently sits.
+
+   The lifecycle checklist (scope → architecture → api-design → implement → test → review → handoff) tracks the KIND of work, not the user's phase count. Several phases can share one stage (e.g. multiple `implement` phases), so do NOT advance on every phase.
+
+   Only PROPOSE advancing when BOTH are true:
+   - the mapped stage is LATER than `next ready` (work has moved to a new kind of activity), AND
+   - `vespawd/paws022/tasks/backlog.md` has no remaining queued work of the earlier stage.
+
+   When proposing, state the mapping in plain language and ask, e.g.: *"Work has moved from architecture to implement. Want me to advance the lifecycle checklist? I will mark the earlier stages done but never mark your current work complete. (yes/no)"*
+
+   Only if the user replies yes, run:
+
+```
+py -3 vespawd/scripts/sync_orchestration.py --advance
+```
+
+   `--advance` completes earlier stages and STOPS before the current stage — it never marks work-in-progress done. Never run `--advance` or `--complete` without explicit user confirmation. If the mapped stage equals `next ready`, or more same-stage work is queued, do NOT propose — just report the sync result.
 
 The Vespawd Executor CLI, when invoked, uses `--workspace vespawd`. Orchestration (Vedaws) runs automatically via the Bridge — you never edit `vespawd/vedaws/` or `vespawd/main/.vedaws/` by hand. If you cannot run the sync command, tell the user to double-click `sync-orchestration.bat`.
 """
