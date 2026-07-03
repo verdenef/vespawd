@@ -174,6 +174,20 @@ pause
 exit /b %RC%
 """
 
+PROJECT_CONSOLE_BAT = """@echo off
+REM Double-click to open the friendly Vespawd console (menu).
+setlocal
+set "SCRIPT=%~dp0vespawd\\scripts\\vespawd_console.py"
+if not exist "%SCRIPT%" (
+    echo ERROR: missing vespawd\\scripts\\vespawd_console.py
+    pause
+    exit /b 1
+)
+where py >nul 2>nul
+if %ERRORLEVEL%==0 (py -3 "%SCRIPT%" "%~dp0.") else (python "%SCRIPT%" "%~dp0.")
+exit /b %ERRORLEVEL%
+"""
+
 PROJECT_ACCEPT_BAT = """@echo off
 REM Double-click AFTER you have tested and accepted the current phase.
 REM Advances the Vedaws lifecycle ledger by ONE stage (asks you to confirm first).
@@ -441,14 +455,15 @@ def _write_cursor_rule(target: Path) -> None:
 
 
 def _install_sync_helper(framework: Path, target: Path, vespawd_dst: Path) -> None:
-    src = framework / "scripts" / "sync_orchestration.py"
-    if not src.is_file():
-        return
-    dst = vespawd_dst / "scripts" / "sync_orchestration.py"
-    dst.parent.mkdir(parents=True, exist_ok=True)
-    shutil.copy2(src, dst)
+    dst_dir = vespawd_dst / "scripts"
+    dst_dir.mkdir(parents=True, exist_ok=True)
+    for name in ("sync_orchestration.py", "vespawd_console.py"):
+        src = framework / "scripts" / name
+        if src.is_file():
+            shutil.copy2(src, dst_dir / name)
     (target / "sync-orchestration.bat").write_text(PROJECT_SYNC_BAT, encoding="utf-8")
     (target / "accept-phase.bat").write_text(PROJECT_ACCEPT_BAT, encoding="utf-8")
+    (target / "vespawd.bat").write_text(PROJECT_CONSOLE_BAT, encoding="utf-8")
 
 
 def _run_git_init(target: Path) -> None:
@@ -505,8 +520,9 @@ def _print_next_steps(target: Path, app_folder: str) -> None:
     print("  4. Ask your Planner for a POS MASTER PROMPT (Phase 1 only)")
     print('  5. Paste the Master Prompt into your IDE with "Execute this."')
     print("     (The executor auto-syncs Vedaws via .cursor/rules/vespawd.mdc)")
-    print("  6. If status.md looks stale: double-click sync-orchestration.bat")
-    print("  7. After you TEST and accept a phase: double-click accept-phase.bat")
+    print()
+    print("  Tip: double-click vespawd.bat anytime for a simple menu")
+    print("       (status, health, sync, accept phase, progress, and more).")
     print()
     print("Executor workspace path (for reference):")
     print(f"  {target / 'vespawd'}")

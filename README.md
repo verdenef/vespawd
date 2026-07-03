@@ -171,17 +171,22 @@ After creating a project with `new-project.bat`, open the **project root** (the 
 
 5. Loop back to the Planner for the next phase.
 
-Two double-click helpers live at the project root:
+Double-click helpers at the project root:
 
 | Button | When to click | What it does |
 |--------|---------------|--------------|
-| `sync-orchestration.bat` | If `status.md` looks stale | Refreshes orchestration status. Never advances the ledger. Safe to run anytime. |
-| `accept-phase.bat` | After you tested and accepted a phase | Asks you to confirm, then ticks the next lifecycle stage (scope → architecture → api-design → implement → test → review → handoff). Optional — it only affects the progress ledger, not your code. |
+| `vespawd.bat` | Anytime you want to check or control the project | Opens a simple menu: Status, Health check, Sync, Accept phase, Progress, and advanced tools. **Start here.** |
+| `sync-orchestration.bat` | If `status.md` looks stale | Refreshes orchestration status. Never advances the ledger. Safe anytime. |
+| `accept-phase.bat` | After you tested and accepted a phase | Confirms, then ticks the next lifecycle stage. Optional — affects only the progress ledger, not your code. |
 
-(Command-line equivalents: `py -3 vespawd/scripts/sync_orchestration.py` and the same with `--complete`.)
+(`vespawd.bat` wraps everything below, so you rarely need the raw commands.)
 ```
 
 Orchestration was already initialized by the setup script; you do not need to run `vedaws init` yourself.
+
+### The Vespawd Console (`vespawd.bat`)
+
+For a friendly, menu-driven way to inspect and control orchestration without memorizing commands, double-click **`vespawd.bat`** (or run `py -3 vespawd/scripts/vespawd_console.py`). It groups actions into **Basic** (Status, Health, Sync, Accept phase, Progress) and **Advanced** (state history, docs checklist, automation, AI providers, events, full status, raw command), and auto-detects paths so you never type `--path`.
 
 The executor CLI exposes the startup command directly; orchestration is available through the library API (`vespawd_executor.api`):
 
@@ -189,8 +194,7 @@ The executor CLI exposes the startup command directly; orchestration is availabl
 python vespawd/main/executor/bin/executor startup --workspace vespawd
 ```
 
-Diagnostics (run only when the executor or status tells you to), from the project root.
-Use `py -3 -m vedaws` if the `vedaws` command is not on your PATH:
+Prefer `vespawd.bat` for diagnostics. The raw equivalents (run only when needed), from the project root — use `py -3 -m vedaws` if the `vedaws` command is not on your PATH:
 
 ```bash
 py -3 -m vedaws doctor  --path vespawd/main    # is the project healthy?
