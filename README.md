@@ -129,8 +129,11 @@ python scripts/new_project.py C:\dev\my-todo-app --name my-todo-app --yes
 
 ```
 my-todo-app/                 ← open THIS in your IDE
+├── .cursor/rules/vespawd.mdc   ← tells the executor to auto-sync Vedaws after each phase
+├── sync-orchestration.bat      ← fallback: run if orchestration status looks stale
 ├── vespawd/                 ← framework copy (paws022, vedaws, bridge, executor)
 │   ├── paws022/             ← project memory (tasks, docs, agent rules)
+│   ├── scripts/sync_orchestration.py
 │   └── main/
 │       ├── bridge/
 │       ├── executor/
@@ -160,9 +163,13 @@ After creating a project with `new-project.bat`, open the **project root** (the 
 2. Ask your Planner to produce a POS MASTER PROMPT from the intake
 
 3. In your IDE agent chat, send "Execute this." then paste the Master Prompt.
-   The executor updates PAWS files and writes code in main/src/.
+   The executor updates PAWS files, writes code in main/src/, and (via .cursor/rules/vespawd.mdc)
+   runs sync_orchestration.py so Vedaws stays in sync.
 
 4. Test the app, then loop back to the Planner for the next phase.
+
+If orchestration status looks stale (status.md not updating), double-click sync-orchestration.bat
+at the project root, or run: py -3 vespawd/scripts/sync_orchestration.py
 ```
 
 Orchestration was already initialized by the setup script; you do not need to run `vedaws init` yourself.
@@ -173,12 +180,13 @@ The executor CLI exposes the startup command directly; orchestration is availabl
 python vespawd/main/executor/bin/executor startup --workspace vespawd
 ```
 
-Diagnostics (run only when the executor or status tells you to), from the project root:
+Diagnostics (run only when the executor or status tells you to), from the project root.
+Use `py -3 -m vedaws` if the `vedaws` command is not on your PATH:
 
 ```bash
-python -m vedaws doctor  --path vespawd/main    # is the project healthy?
-python -m vedaws status  --path vespawd/main    # what phase is orchestration on?
-python -m vedaws software artifacts --path vespawd/main   # docs present?
+py -3 -m vedaws doctor  --path vespawd/main    # is the project healthy?
+py -3 -m vedaws status  --path vespawd/main    # what phase is orchestration on?
+py -3 -m vedaws software artifacts --path vespawd/main   # docs present?
 ```
 
 ---
@@ -189,7 +197,7 @@ The main loop is **Planner → IDE → test → Planner**, repeated until the ba
 
 1. **Intake** — paste the assignment and rubric into `paws022/tasks/intake.md`.
 2. **Plan** — the Planner turns intake into a `# POS MASTER PROMPT` (Phase 1 in `CURRENT TASK`, later phases in `BACKLOG`).
-3. **Execute** — paste the Master Prompt into your IDE with `Execute this.`. The executor parses it, syncs PAWS memory, runs the design/doctor gates via the Bridge, and implements in `main/src/`.
+3. **Execute** — paste the Master Prompt into your IDE with `Execute this.`. The executor parses it, syncs PAWS memory, implements in `main/src/`, and runs `vespawd/scripts/sync_orchestration.py` so Vedaws orchestration stays aligned (fallback: `sync-orchestration.bat` at the project root).
 4. **Verify** — you run and test the app. Small fixes stay in IDE chat; a completed phase goes back to the Planner.
 5. **Advance** — a planner follow-up (see `paws022/.ai/planner_followup_message.md`) produces the next Master Prompt.
 6. **Handoff** — the executor refreshes `paws022/docs/HANDOFF_FOR_DOCUMENTER.md` (facts only) and the Bridge runs the `pre_documenter` gate.

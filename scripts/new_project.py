@@ -146,8 +146,32 @@ When the user pastes a `# POS MASTER PROMPT` (or says "Execute this"):
 1. Follow `vespawd/paws022/.ai/executor_rules.md` in full.
 2. Write POS memory (current_task, project_context, backlog, HANDOFF) under `vespawd/paws022/`.
 3. Implement code only under `main/src/`, with minimal diffs.
+4. **Sync orchestration as your final step.** After the task's acceptance criteria are met and `vespawd/paws022/tasks/current_task.md` is updated, run this from the project root so Vedaws stays in sync:
 
-The Vespawd Executor CLI, when invoked, uses `--workspace vespawd`. Orchestration (Vedaws) runs automatically via the Bridge — you never edit `vespawd/vedaws/` or `vespawd/main/.vedaws/` by hand.
+```
+py -3 vespawd/scripts/sync_orchestration.py
+```
+
+   (Use `python vespawd/scripts/sync_orchestration.py` if `py` is unavailable.) This calls the Bridge, advances the Vedaws workflow/state, and refreshes `vespawd/paws022/tasks/status.md`. Report the resulting state and any warnings.
+
+The Vespawd Executor CLI, when invoked, uses `--workspace vespawd`. Orchestration (Vedaws) runs automatically via the Bridge — you never edit `vespawd/vedaws/` or `vespawd/main/.vedaws/` by hand. If you cannot run the sync command, tell the user to double-click `sync-orchestration.bat`.
+"""
+
+PROJECT_SYNC_BAT = """@echo off
+REM Sync PAWS current_task.md to Vedaws (run after each executor phase).
+setlocal
+set "SCRIPT=%~dp0vespawd\\scripts\\sync_orchestration.py"
+if not exist "%SCRIPT%" (
+    echo ERROR: missing vespawd\\scripts\\sync_orchestration.py
+    pause
+    exit /b 1
+)
+where py >nul 2>nul
+if %ERRORLEVEL%==0 (py -3 "%SCRIPT%" %*) else (python "%SCRIPT%" %*)
+set "RC=%ERRORLEVEL%"
+echo.
+if %RC% NEQ 0 pause
+exit /b %RC%
 """
 
 STATUS_TEMPLATE = """# POS status
@@ -388,6 +412,16 @@ def _write_cursor_rule(target: Path) -> None:
     rule_path.write_text(VESPAWD_CURSOR_RULE, encoding="utf-8")
 
 
+def _install_sync_helper(framework: Path, target: Path, vespawd_dst: Path) -> None:
+    src = framework / "scripts" / "sync_orchestration.py"
+    if not src.is_file():
+        return
+    dst = vespawd_dst / "scripts" / "sync_orchestration.py"
+    dst.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copy2(src, dst)
+    (target / "sync-orchestration.bat").write_text(PROJECT_SYNC_BAT, encoding="utf-8")
+
+
 def _run_git_init(target: Path) -> None:
     if shutil.which("git") is None:
         print("note: git not found — skipping git init")
@@ -441,6 +475,8 @@ def _print_next_steps(target: Path, app_folder: str) -> None:
     print("  3. Write your assignment in vespawd/paws022/tasks/intake.md")
     print("  4. Ask your Planner for a POS MASTER PROMPT (Phase 1 only)")
     print('  5. Paste the Master Prompt into your IDE with "Execute this."')
+    print("     (The executor auto-syncs Vedaws via .cursor/rules/vespawd.mdc)")
+    print("  6. If status.md looks stale: double-click sync-orchestration.bat")
     print()
     print("Executor workspace path (for reference):")
     print(f"  {target / 'vespawd'}")
@@ -555,6 +591,7 @@ def _bootstrap_project(
     _patch_manifest_cli(manifest_path)
     _reset_paws_memory(framework, vespawd_dst / "paws022", project_name, app_folder)
     _write_cursor_rule(target)
+    _install_sync_helper(framework, target, vespawd_dst)
 
     if not no_init:
         print("Initializing Vedaws orchestration ...")

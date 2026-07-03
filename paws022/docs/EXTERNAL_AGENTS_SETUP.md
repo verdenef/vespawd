@@ -113,7 +113,8 @@ See **Gemini Gem — Knowledge** above for documenter uploads.
 | 1 | `new-project.bat` (or `python scripts/new_project.py`) → open the **project root** in your executor IDE |
 | 2 | Planner + assignment → get `# POS MASTER PROMPT` |
 | 2b | (Optional) UI designer → merge into `design/DESIGN.md` — [UI_DESIGN.md](UI_DESIGN.md) |
-| 3 | Executor chat: `Execute this.` + pasted prompt |
+| 3 | Executor chat: `Execute this.` + pasted prompt (auto-syncs Vedaws via `.cursor/rules/vespawd.mdc`) |
+| 3b | If `tasks/status.md` looks stale: double-click `sync-orchestration.bat` at the project root |
 | 4 | When done → documenter + HANDOFF + rubric — **one section per chat** (or report plan first); see [SUBMISSION_DOCUMENTATION.md](SUBMISSION_DOCUMENTATION.md) |
 
 ## Example message (planner)
