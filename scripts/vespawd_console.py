@@ -14,6 +14,7 @@ import re
 import subprocess
 import sys
 import tomllib
+from datetime import datetime, timezone
 from pathlib import Path
 
 SCRIPT_DIR = Path(__file__).resolve().parent
@@ -47,6 +48,22 @@ def _workflow_id(vespawd: Path) -> str:
         except (OSError, tomllib.TOMLDecodeError):
             pass
     return "software"
+
+
+def _format_sync_time(raw: str) -> str:
+    """Show Bridge UTC timestamps in the user's local timezone."""
+    text = raw.strip()
+    if not text or text in {"—", "-"}:
+        return text or "—"
+    try:
+        iso = text[:-1] + "+00:00" if text.endswith("Z") else text
+        dt = datetime.fromisoformat(iso)
+        if dt.tzinfo is None:
+            dt = dt.replace(tzinfo=timezone.utc)
+        local = dt.astimezone()
+        return f"{local.strftime('%Y-%m-%d %H:%M')} (your time)"
+    except ValueError:
+        return raw
 
 
 class Console:
@@ -117,7 +134,7 @@ class Console:
             print(f"  Next stage    : {ready}  (accept a phase to advance)")
         print(f"  App           : {self._status_md_field('App')}")
         print(f"  Handoff       : {self._status_md_field('Handoff')}")
-        print(f"  Last synced   : {self._status_md_field('Last_sync')}")
+        print(f"  Last synced   : {_format_sync_time(self._status_md_field('Last_sync'))}")
 
     def action_health(self) -> None:
         print("Checking project health (Vedaws doctor)...")
