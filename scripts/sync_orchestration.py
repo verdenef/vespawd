@@ -124,6 +124,45 @@ def _vedaws_state(vedaws_main: Path, vespawd: Path) -> str:
     return match.group(1) if match else "unknown"
 
 
+def _workflow_progress(vedaws_main: Path, vespawd: Path, workflow_id: str) -> tuple[str, str | None]:
+    """Return (progress_line, first_ready_task_id) from `vedaws workflow show`."""
+    proc = subprocess.run(
+        [sys.executable, "-m", "vedaws", "workflow", "show", workflow_id, "--path", str(vedaws_main)],
+        capture_output=True,
+        text=True,
+        env=_vedaws_env(vespawd),
+    )
+    if proc.returncode != 0:
+        return "unknown", None
+    progress = ""
+    ready: str | None = None
+    for line in proc.stdout.splitlines():
+        if "Progress:" in line:
+            progress = line.split("Progress:", 1)[1].strip()
+        match = re.match(r"\s*(\S+)\s+\[ready\]", line)
+        if match and ready is None:
+            ready = match.group(1)
+    return progress or "unknown", ready
+
+
+def _complete_ready_task(vedaws_main: Path, vespawd: Path, task_id: str) -> tuple[bool, str]:
+    """Complete a single ready workflow stage without triggering the automation cascade.
+
+    Uses `vedaws tasks complete` directly (single-step) rather than the Bridge's
+    post_phase_complete, which runs a dispatch loop that would auto-finish every
+    remaining stage and prematurely mark the project completed.
+    """
+    proc = subprocess.run(
+        [sys.executable, "-m", "vedaws", "tasks", "complete", task_id, "--path", str(vedaws_main)],
+        capture_output=True,
+        text=True,
+        env=_vedaws_env(vespawd),
+    )
+    if proc.returncode != 0:
+        return False, (proc.stderr or proc.stdout or "tasks complete rejected").strip()
+    return True, task_id
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
         description="Sync paws022/tasks/current_task.md to Vedaws via the Bridge",
@@ -136,6 +175,12 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument(
         "--phase-hint",
         help="Override phase keyword (e.g. implement, test, handoff)",
+    )
+    parser.add_argument(
+        "--complete",
+        action="store_true",
+        help="After you have tested and accepted this phase, mark the current ready "
+        "workflow stage complete so the Vedaws ledger advances (one stage per run).",
     )
     args = parser.parse_args(argv)
 
@@ -196,19 +241,43 @@ def main(argv: list[str] | None = None) -> int:
     ingest = _invoke_bridge(bridge, "ingest_master_prompt", context, ingest_payload)
     sync = _invoke_bridge(bridge, "sync_status", context, {})
 
-    state_after = _vedaws_state(vedaws_main, vespawd)
     ok = bool(ingest.get("ok")) and bool(sync.get("ok"))
+    completed_task: str | None = None
+    complete_error: str | None = None
+
+    if args.complete:
+        _, ready_task = _workflow_progress(vedaws_main, vespawd, "software")
+        if ready_task is None:
+            complete_error = "no ready workflow stage to close (already caught up or blocked)"
+        else:
+            done, detail = _complete_ready_task(vedaws_main, vespawd, ready_task)
+            if done:
+                completed_task = detail
+                # Reproject status.md through the Bridge after the ledger moved.
+                sync = _invoke_bridge(bridge, "sync_status", context, {})
+            else:
+                complete_error = detail
+                ok = False
+
+    state_after = _vedaws_state(vedaws_main, vespawd)
+    progress, next_ready = _workflow_progress(vedaws_main, vespawd, "software")
 
     print("ingest:   ", "ok" if ingest.get("ok") else "FAILED")
     print("sync:     ", "ok" if sync.get("ok") else "FAILED")
+    if args.complete:
+        if completed_task:
+            print(f"complete:  {completed_task} marked done")
+        else:
+            print(f"complete:  {complete_error}")
     print(f"task id:  {ingest.get('vedaws_task_id') or sync.get('vedaws_task_id') or '—'}")
     print(f"state:    {state_before} -> {state_after}")
-    if ingest.get("warnings"):
-        for warning in ingest["warnings"]:
-            print(f"warning:  {warning}")
+    print(f"workflow: {progress}" + (f"  (next ready: {next_ready})" if next_ready else ""))
+    for warning in ingest.get("warnings") or []:
+        print(f"warning:  {warning}")
     print()
     print(f"Updated:  {paws / 'tasks' / 'status.md'}")
-    print()
+    if not args.complete and next_ready:
+        print("Tip: after you test and accept this phase, run with --complete to advance the workflow one stage.")
     print("Tip: use  py -3 -m vedaws status --path vespawd/main  (same as vedaws when not on PATH)")
     return 0 if ok else 1
 

@@ -152,7 +152,7 @@ When the user pastes a `# POS MASTER PROMPT` (or says "Execute this"):
 py -3 vespawd/scripts/sync_orchestration.py
 ```
 
-   (Use `python vespawd/scripts/sync_orchestration.py` if `py` is unavailable.) This calls the Bridge, advances the Vedaws workflow/state, and refreshes `vespawd/paws022/tasks/status.md`. Report the resulting state and any warnings.
+   (Use `python vespawd/scripts/sync_orchestration.py` if `py` is unavailable.) This calls the Bridge, advances the Vedaws workflow/state, and refreshes `vespawd/paws022/tasks/status.md`. Report the resulting state and any warnings. Do NOT pass `--complete` yourself — that is for the human to run after they have tested and accepted a phase.
 
 The Vespawd Executor CLI, when invoked, uses `--workspace vespawd`. Orchestration (Vedaws) runs automatically via the Bridge — you never edit `vespawd/vedaws/` or `vespawd/main/.vedaws/` by hand. If you cannot run the sync command, tell the user to double-click `sync-orchestration.bat`.
 """

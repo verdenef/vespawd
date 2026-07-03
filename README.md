@@ -166,10 +166,16 @@ After creating a project with `new-project.bat`, open the **project root** (the 
    The executor updates PAWS files, writes code in main/src/, and (via .cursor/rules/vespawd.mdc)
    runs sync_orchestration.py so Vedaws stays in sync.
 
-4. Test the app, then loop back to the Planner for the next phase.
+4. Test the app. Once you have tested and ACCEPTED the phase, advance the Vedaws
+   workflow ledger one stage:
+   → py -3 vespawd/scripts/sync_orchestration.py --complete
+
+5. Loop back to the Planner for the next phase.
 
 If orchestration status looks stale (status.md not updating), double-click sync-orchestration.bat
 at the project root, or run: py -3 vespawd/scripts/sync_orchestration.py
+(Add --complete only when you have accepted the current phase — it advances one lifecycle
+stage: scope → architecture → api-design → implement → test → review → handoff.)
 ```
 
 Orchestration was already initialized by the setup script; you do not need to run `vedaws init` yourself.
