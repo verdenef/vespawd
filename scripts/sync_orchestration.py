@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import re
 import subprocess
 import sys
@@ -100,11 +101,22 @@ def _invoke_bridge(bridge: Path, operation: str, context: dict, payload: dict | 
         return result
 
 
-def _vedaws_state(vedaws_main: Path) -> str:
+def _vedaws_env(vespawd: Path) -> dict[str, str]:
+    """Mirror the Bridge: run the bundled runtime so we don't rely on a global install."""
+    env = dict(os.environ)
+    runtime = vespawd / "vedaws" / "runtime"
+    if runtime.is_dir():
+        existing = env.get("PYTHONPATH")
+        env["PYTHONPATH"] = str(runtime) + (os.pathsep + existing if existing else "")
+    return env
+
+
+def _vedaws_state(vedaws_main: Path, vespawd: Path) -> str:
     proc = subprocess.run(
         [sys.executable, "-m", "vedaws", "state", "--path", str(vedaws_main)],
         capture_output=True,
         text=True,
+        env=_vedaws_env(vespawd),
     )
     if proc.returncode != 0:
         return "unknown"
@@ -155,7 +167,7 @@ def main(argv: list[str] | None = None) -> int:
     }
     product = _product_name(project_context)
 
-    state_before = _vedaws_state(vedaws_main)
+    state_before = _vedaws_state(vedaws_main, vespawd)
     print(f"Project:  {project_root.name}")
     print(f"Vedaws:   {state_before}")
     print(f"Goal:     {task['goal'][:80]}{'...' if len(task['goal']) > 80 else ''}")
@@ -184,7 +196,7 @@ def main(argv: list[str] | None = None) -> int:
     ingest = _invoke_bridge(bridge, "ingest_master_prompt", context, ingest_payload)
     sync = _invoke_bridge(bridge, "sync_status", context, {})
 
-    state_after = _vedaws_state(vedaws_main)
+    state_after = _vedaws_state(vedaws_main, vespawd)
     ok = bool(ingest.get("ok")) and bool(sync.get("ok"))
 
     print("ingest:   ", "ok" if ingest.get("ok") else "FAILED")
