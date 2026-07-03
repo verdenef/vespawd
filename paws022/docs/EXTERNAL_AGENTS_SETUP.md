@@ -1,10 +1,10 @@
-# External agents setup (POS v1.1.7)
+# External agents setup (Vespawd)
 
-Configure **your own** planner and documenter in whatever tools you chose in setup (Gemini, ChatGPT, Claude, etc.). Copy **prompt text** from this repo — do not share personal assistant links.
+Configure **your own** planner and documenter in whatever tools you chose (Gemini, ChatGPT, Claude, etc.). Copy **prompt text** from this project — do not share personal assistant links.
 
 **UI in Cursor (typical):** [STITCH_CURSOR.md](STITCH_CURSOR.md) — Stitch MCP; prompts in **executor chat**, not planner. Tool-neutral: [UI_DESIGN.md](UI_DESIGN.md).
 
-Run **`Setup-POS.bat`** once per machine (writes `%USERPROFILE%\.pos\config.json`). The setup wizard links to prompt files below for copying into your Gems.
+**In a Vespawd project** these prompt files live under `vespawd/paws022/.ai/` and `vespawd/paws022/docs/`. Machine setup (`setup.bat`) and project creation (`new-project.bat`) are handled by Vespawd; there is no separate POS installer. You only need to copy the prompt text below into your external agents once, then re-copy when the instructions version bumps.
 
 ## Planner (external)
 
@@ -110,7 +110,7 @@ See **Gemini Gem — Knowledge** above for documenter uploads.
 
 | Step | Action |
 |------|--------|
-| 1 | `pos-new my-app` or `pos-adopt` → open in **executor** IDE |
+| 1 | `new-project.bat` (or `python scripts/new_project.py`) → open the **project root** in your executor IDE |
 | 2 | Planner + assignment → get `# POS MASTER PROMPT` |
 | 2b | (Optional) UI designer → merge into `design/DESIGN.md` — [UI_DESIGN.md](UI_DESIGN.md) |
 | 3 | Executor chat: `Execute this.` + pasted prompt |
@@ -122,8 +122,8 @@ See **Gemini Gem — Knowledge** above for documenter uploads.
 Phase 1 only. [paste assignment]
 ```
 
-## When this repo updates
+## When this project updates
 
-Check `instructionsVersion` in `pos.config.json.example`. If it bumps, re-copy planner, documenter, and (if used) UI designer prompt files into **your** external agents.
+Check the `Instructions version` line at the top of `.ai/planner_prompt.md`. If it bumps, re-copy the planner, documenter, and (if used) UI designer prompt files into **your** external agents.
 
 Tool-specific steps: [TOOLCHAIN.md](TOOLCHAIN.md).

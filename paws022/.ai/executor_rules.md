@@ -26,7 +26,16 @@ If kernel and memory conflict, **memory wins**; note exceptions in `docs/decisio
 
 ### Sidecar layout
 
-If `.ai/project_context.md` lists **Mode: sidecar**, the POS kernel lives under **`paws022/`** (or this repo is that folder). Implement application code under the **Application code** path from project context (e.g. `../main/src/`), not `paws022/src/`. Open the **workspace root** (parent of `paws022` and the app folder) in the IDE.
+If `.ai/project_context.md` lists **Mode: sidecar**, the POS kernel lives under **`paws022/`**. Implement application code under the **Application code** path from project context (never `paws022/src/`).
+
+**Vespawd projects** nest the kernel one level deeper. The user opens the **project root** in the IDE, where:
+
+- POS memory is at `vespawd/paws022/` (`.ai/`, `tasks/`, `docs/`, `design/`)
+- Application code is at `main/src/` (sibling of `vespawd/`; `Application code` resolves to `../../main/src`)
+- The executor CLI runs with `--workspace vespawd/` (there is no single folder that is the direct parent of both `paws022/` and `main/`; the Bridge resolves paths from `main/bridge/manifest.toml`)
+- `vespawd/vedaws/` and `vespawd/main/.vedaws/` are orchestration state — **managed automatically, do not hand-edit**
+
+When paths in this file or a Master Prompt are written without the `vespawd/` prefix, prepend `vespawd/` to reach POS files from the project root. Legacy POS-only repos (no `vespawd/` folder) use the paths as written.
 
 ## While working
 

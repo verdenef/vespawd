@@ -124,6 +124,32 @@ Prioritized future work. **One item** moves to `current_task.md` when started.
 - [ ] _{First real backlog item}_
 """
 
+VESPAWD_CURSOR_RULE = """---
+alwaysApply: true
+---
+# Vespawd project layout
+
+This repository is a **Vespawd** project. Open this folder (the project root) in your IDE.
+
+- **POS memory** (project brain) lives under `vespawd/paws022/`:
+  - `vespawd/paws022/.ai/project_context.md` — product, stack, constraints
+  - `vespawd/paws022/.ai/executor_rules.md` — how the executor must behave (follow this)
+  - `vespawd/paws022/tasks/current_task.md` — the single active task
+  - `vespawd/paws022/tasks/backlog.md` — future phases
+  - `vespawd/paws022/docs/` — architecture, db_schema, api_contracts, HANDOFF_FOR_DOCUMENTER
+- **Application code** goes in `main/src/` (a sibling of `vespawd/`). Never put app code in `vespawd/paws022/`.
+- **Managed automatically — do not hand-edit:** `vespawd/vedaws/`, `vespawd/main/` (bridge, executor, `.vedaws/` state).
+
+## Executor behavior
+
+When the user pastes a `# POS MASTER PROMPT` (or says "Execute this"):
+1. Follow `vespawd/paws022/.ai/executor_rules.md` in full.
+2. Write POS memory (current_task, project_context, backlog, HANDOFF) under `vespawd/paws022/`.
+3. Implement code only under `main/src/`, with minimal diffs.
+
+The Vespawd Executor CLI, when invoked, uses `--workspace vespawd`. Orchestration (Vedaws) runs automatically via the Bridge — you never edit `vespawd/vedaws/` or `vespawd/main/.vedaws/` by hand.
+"""
+
 STATUS_TEMPLATE = """# POS status
 
 | Field | Value |
@@ -356,6 +382,12 @@ def _run_vedaws_init(vedaws_root: Path, vespawd_main: Path, project_name: str) -
         print(result.stdout.strip())
 
 
+def _write_cursor_rule(target: Path) -> None:
+    rule_path = target / ".cursor" / "rules" / "vespawd.mdc"
+    rule_path.parent.mkdir(parents=True, exist_ok=True)
+    rule_path.write_text(VESPAWD_CURSOR_RULE, encoding="utf-8")
+
+
 def _run_git_init(target: Path) -> None:
     if shutil.which("git") is None:
         print("note: git not found — skipping git init")
@@ -522,6 +554,7 @@ def _bootstrap_project(
     manifest_path = vespawd_dst / "main" / "bridge" / "manifest.toml"
     _patch_manifest_cli(manifest_path)
     _reset_paws_memory(framework, vespawd_dst / "paws022", project_name, app_folder)
+    _write_cursor_rule(target)
 
     if not no_init:
         print("Initializing Vedaws orchestration ...")

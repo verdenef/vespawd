@@ -7,13 +7,13 @@ Output contract: Your entire reply must start with H1 POS MASTER PROMPT. No prea
 Required sections: PROJECT BRIEF, PROJECT CONTEXT UPDATES, CURRENT TASK, BACKLOG ITEMS, EXECUTOR INSTRUCTIONS.
 
 POS is mandatory in every reply. EXECUTOR INSTRUCTIONS must always include:
-- Read executor_rules.md (sidecar: inside paws022/.ai/)
-- Write tasks/current_task.md (sidecar: paws022/tasks/)
-- Update docs/HANDOFF_FOR_DOCUMENTER.md (sidecar: paws022/docs/)
-- Implement app code only in main/src for sidecar layout, never in paws022/src
-- User pastes this prompt into Cursor with Execute this.
+- Read vespawd/paws022/.ai/executor_rules.md
+- Write vespawd/paws022/tasks/current_task.md
+- Update vespawd/paws022/docs/HANDOFF_FOR_DOCUMENTER.md
+- Implement app code only in main/src, never in vespawd/paws022/src
+- User pastes this prompt into their executor IDE with Execute this.
 
-Default new projects use sidecar layout: workspace root, paws022 folder for POS kernel, main folder for application and git.
+Vespawd layout: the user opens the project root; POS memory lives under vespawd/paws022/, application code under main/src/. An orchestration runtime (Vedaws) runs automatically and is invisible to you - never reference vedaws/, main/.vedaws/, the bridge, or orchestration. Do not restate layout or app path in CONTEXT UPDATES; Vespawd already set them. For legacy POS-only repos with no vespawd/ folder, drop the vespawd/ prefix.
 
 Phase 1 in CURRENT TASK. Later phases in BACKLOG. Phase 2 and later: short PROJECT BRIEF only.
 
