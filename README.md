@@ -90,26 +90,34 @@ vespawd/                          ← workspace root (open in your IDE)
 
 ---
 
-## Create a new project
+## Getting started
 
-Keep one copy of the Vespawd framework on your machine (this repo, cloned from git). For each new application, run the setup script — it copies the framework into your project and wires the sidecar layout automatically.
+Vespawd requires **Python 3.11+**. Keep one copy of the framework on your machine (this repo, cloned from git); each project gets its own self-contained copy.
 
-**Interactive (recommended):**
+There are two steps, each with a double-click launcher on Windows:
 
-```powershell
-# Windows
-.\scripts\new-vespawd-project.ps1
-```
+| Step | Windows (double-click) | Any OS |
+|------|------------------------|--------|
+| **1. Set up once per machine** | `setup.bat` | `python scripts/setup.py` |
+| **2. Create each new project** | `new-project.bat` | `python scripts/new_project.py` |
 
-```bash
-# macOS / Linux
-./scripts/new-vespawd-project.sh
-```
+### Step 1 — One-time setup
 
-The script prompts for:
+Run `setup.bat` (or `python scripts/setup.py`). It verifies Python, installs the Vedaws runtime, and confirms everything works.
+
+Cross-platform wrappers: `scripts/setup-vespawd.ps1`, `scripts/setup-vespawd.sh`.
+
+Options: `--dev-all` (also install Bridge + Executor for running tests), `--no-dev` (skip the pytest extra).
+
+### Step 2 — Create a new project
+
+Run `new-project.bat` (or `python scripts/new_project.py`). It copies the framework into your project and wires the sidecar layout automatically, prompting for:
+
 - **Parent directory** — where to create the project (e.g. `C:\dev`)
 - **Project name** — folder name, product name, and Vedaws project name
 - **Confirmation** — shows the layout before copying
+
+Cross-platform wrappers: `scripts/new-vespawd-project.ps1`, `scripts/new-vespawd-project.sh`.
 
 **Non-interactive:**
 
@@ -135,30 +143,7 @@ The script also: resets PAWS memory to a clean slate, runs `vedaws init`, option
 
 Flags: `--force` (replace existing `vespawd/`), `--no-init`, `--no-git`, `--no-verify`.
 
----
-
-## Installation
-
-Vespawd requires **Python 3.11+**.
-
-### 1. Install the Vedaws runtime (once per machine)
-
-```bash
-cd vedaws
-pip install -e ".[dev]"
-vedaws version
-```
-
-### 2. Install the Bridge (for tests / development)
-
-```bash
-cd main/bridge
-pip install -e ".[dev]"
-```
-
-The Bridge locates the Vedaws CLI on `PATH` or via `[vedaws].cli` in `main/bridge/manifest.toml`.
-
-### 3. Configure external agents
+### Step 3 — Configure external agents
 
 Copy the planner instructions from `paws022/.ai/planner_prompt.md` into your planner chat (ChatGPT, Claude, or a Gemini Gem), and `paws022/.ai/documenter_prompt.md` into a separate documenter chat. See [`paws022/docs/EXTERNAL_AGENTS_SETUP.md`](paws022/docs/EXTERNAL_AGENTS_SETUP.md) for details.
 
@@ -166,36 +151,34 @@ Copy the planner instructions from `paws022/.ai/planner_prompt.md` into your pla
 
 ## Quick Start
 
-Open the **workspace root** (the folder containing `main/`, `paws022/`, and `vedaws/`) in your IDE.
+After creating a project with `new-project.bat`, open the **project root** (the folder containing `vespawd/` and `main/`) in your IDE, then:
 
-```bash
-# 1. Bootstrap orchestration for a project (once per project)
-cd main
-vedaws init --template software --name my-project
+```text
+1. Dump your assignment into raw intake
+   → edit vespawd/paws022/tasks/intake.md
 
-# 2. Dump your assignment into raw intake
-#    → edit paws022/tasks/intake.md
+2. Ask your Planner to produce a POS MASTER PROMPT from the intake
 
-# 3. Ask your Planner to produce a POS MASTER PROMPT from the intake
+3. In your IDE agent chat, send "Execute this." then paste the Master Prompt.
+   The executor updates PAWS files and writes code in main/src/.
 
-# 4. In your IDE agent chat, send "Execute this." then paste the Master Prompt.
-#    The executor updates PAWS files and writes code in main/src/.
-
-# 5. Test the app, then loop back to the Planner for the next phase.
+4. Test the app, then loop back to the Planner for the next phase.
 ```
+
+Orchestration was already initialized by the setup script; you do not need to run `vedaws init` yourself.
 
 The executor CLI exposes the startup command directly; orchestration is available through the library API (`vespawd_executor.api`):
 
 ```bash
-python main/executor/bin/executor startup --workspace /path/to/vespawd
+python vespawd/main/executor/bin/executor startup --workspace vespawd
 ```
 
-Diagnostics (run only when the executor or status tells you to):
+Diagnostics (run only when the executor or status tells you to), from the project root:
 
 ```bash
-vedaws doctor  --path main    # is the project healthy?
-vedaws status  --path main    # what phase is orchestration on?
-vedaws software artifacts --path main   # are documentation artifacts present?
+python -m vedaws doctor  --path vespawd/main    # is the project healthy?
+python -m vedaws status  --path vespawd/main    # what phase is orchestration on?
+python -m vedaws software artifacts --path vespawd/main   # docs present?
 ```
 
 ---
