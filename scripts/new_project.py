@@ -167,10 +167,38 @@ if not exist "%SCRIPT%" (
     exit /b 1
 )
 where py >nul 2>nul
-if %ERRORLEVEL%==0 (py -3 "%SCRIPT%" %*) else (python "%SCRIPT%" %*)
+if %ERRORLEVEL%==0 (py -3 "%SCRIPT%" "%~dp0.") else (python "%SCRIPT%" "%~dp0.")
 set "RC=%ERRORLEVEL%"
 echo.
-if %RC% NEQ 0 pause
+pause
+exit /b %RC%
+"""
+
+PROJECT_ACCEPT_BAT = """@echo off
+REM Double-click AFTER you have tested and accepted the current phase.
+REM Advances the Vedaws lifecycle ledger by ONE stage (asks you to confirm first).
+setlocal
+set "SCRIPT=%~dp0vespawd\\scripts\\sync_orchestration.py"
+if not exist "%SCRIPT%" (
+    echo ERROR: missing vespawd\\scripts\\sync_orchestration.py
+    pause
+    exit /b 1
+)
+echo(
+echo   Accept the current phase and advance the Vedaws workflow by one stage.
+echo   Only do this if you have TESTED the app and are happy with this phase.
+echo(
+set /p "CONFIRM=Type Y then Enter to confirm (anything else cancels): "
+if /i not "%CONFIRM%"=="Y" (
+    echo Cancelled - nothing changed.
+    pause
+    exit /b 0
+)
+where py >nul 2>nul
+if %ERRORLEVEL%==0 (py -3 "%SCRIPT%" "%~dp0." --complete) else (python "%SCRIPT%" "%~dp0." --complete)
+set "RC=%ERRORLEVEL%"
+echo(
+pause
 exit /b %RC%
 """
 
@@ -420,6 +448,7 @@ def _install_sync_helper(framework: Path, target: Path, vespawd_dst: Path) -> No
     dst.parent.mkdir(parents=True, exist_ok=True)
     shutil.copy2(src, dst)
     (target / "sync-orchestration.bat").write_text(PROJECT_SYNC_BAT, encoding="utf-8")
+    (target / "accept-phase.bat").write_text(PROJECT_ACCEPT_BAT, encoding="utf-8")
 
 
 def _run_git_init(target: Path) -> None:
@@ -477,6 +506,7 @@ def _print_next_steps(target: Path, app_folder: str) -> None:
     print('  5. Paste the Master Prompt into your IDE with "Execute this."')
     print("     (The executor auto-syncs Vedaws via .cursor/rules/vespawd.mdc)")
     print("  6. If status.md looks stale: double-click sync-orchestration.bat")
+    print("  7. After you TEST and accept a phase: double-click accept-phase.bat")
     print()
     print("Executor workspace path (for reference):")
     print(f"  {target / 'vespawd'}")
